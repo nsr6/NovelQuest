@@ -224,7 +224,7 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
                 onChange={(e) => handleInputChange('favoriteBooks', e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, 'favoriteBooks')}
                 placeholder="Books you love..."
-                className="flex-grow bg-transparent focus:outline-none text-dark-wood placeholder-gray-500 min-w-[150px]"
+                className="flex-1 bg-transparent focus:outline-none text-dark-wood placeholder-gray-500 min-w-[120px]"
                 autoComplete="off"
               />
             </div>
