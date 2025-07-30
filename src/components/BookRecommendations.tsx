@@ -1,15 +1,16 @@
 'use client';
 
 import { BookRecommendation } from '@/types/book';
-import { Book, User, Feather } from 'lucide-react';
+import { Book, User, Feather, RefreshCw } from 'lucide-react';
 
 interface BookRecommendationsProps {
   recommendations: BookRecommendation[];
   isLoading: boolean;
   hasSearched: boolean;
+  onRefresh: () => void;
 }
 
-export default function BookRecommendations({ recommendations, isLoading, hasSearched }: BookRecommendationsProps) {
+export default function BookRecommendations({ recommendations, isLoading, hasSearched, onRefresh }: BookRecommendationsProps) {
   if (isLoading) {
     return (
       <div className="text-center py-12">
@@ -39,9 +40,18 @@ export default function BookRecommendations({ recommendations, isLoading, hasSea
 
   return (
     <div className="mt-12">
+      <div className="flex justify-center items-center mb-8">
       <h2 className="text-4xl font-serif text-center text-dark-wood mb-8 border-b-2 border-gold-leaf pb-4">
-        Your Personalized Recommendations
-      </h2>
+          Your Personalized Recommendations
+        </h2>
+        <button 
+          onClick={onRefresh} 
+          className="ml-4 text-dark-wood hover:text-gold-leaf transition-transform duration-300 hover:rotate-180"
+          title="Refresh Recommendations"
+        >
+          <RefreshCw className="w-7 h-7" />
+        </button>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {recommendations.map((book, index) => (
           <div 
@@ -50,8 +60,8 @@ export default function BookRecommendations({ recommendations, isLoading, hasSea
           >
             <div className="relative flex-grow mb-4">
               <div className="absolute top-0 right-[-1rem] bg-gold-leaf py-0.5 px-3 rounded-l-md shadow">
-                <span className="font-serif text-xs text-dark-wood font-semibold tracking-wide">{book.genre}</span>
-              </div>
+                  <span className="font-serif text-xs text-dark-wood font-semibold tracking-wide">{book.genre}</span>
+                </div>
               
               <div className="flex items-center gap-3 mb-3">
                 <div className="bg-aged-paper p-2 rounded-full ring-1 ring-leather-brown">
@@ -59,7 +69,7 @@ export default function BookRecommendations({ recommendations, isLoading, hasSea
                 </div>
                 <h3 className="text-xl font-serif text-dark-wood flex-1 pr-24">{book.title}</h3>
               </div>
-
+              
               <div className="border-t border-b border-leather-brown border-dashed my-3 py-2">
                 <div className="flex items-center gap-2 text-dark-wood">
                   <User className="w-4 h-4 flex-shrink-0" />

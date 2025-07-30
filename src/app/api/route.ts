@@ -10,18 +10,41 @@ const groq = new Groq({
 export async function POST(req: NextRequest) {
     try {
         // 1. Read the request body
-        const { favoriteBooks, leastFavoriteBooks, preferredGenres, favoriteAuthors } = await req.json();
+        const { favoriteBooks, leastFavoriteBooks, preferredGenres, favoriteAuthors, excludedTitles } = await req.json();
 
         // 2. Create the prompt for the AI
-        const prompt = `
-You are a helpful book recommendation assistant. Based on the following user preferences:
+        let prompt = `
+        You are a helpful and knowledgeable book recommendation assistant. Based on the user's preferences below, recommend exactly 6 books that match their taste. Use the following inputs (some may be empty or missing):
 
-- Favorite Books: ${favoriteBooks}
-- Least Favorite Books: ${leastFavoriteBooks}
-- Preferred Genres: ${preferredGenres}
-- Favorite Authors: ${favoriteAuthors}
+Favorite Books: ${favoriteBooks}
 
-Please recommend exactly 6 books. Do not recommend any books written by the author of their least favorite books. Make sure the recommendations include almost all the preferred genres. Respond only in the following strict JSON format (no extra text or explanation):
+Least Favorite Books: ${leastFavoriteBooks} (optional)
+
+Preferred Genres: ${preferredGenres}
+
+Favorite Authors: ${favoriteAuthors} (optional)
+
+Rules:
+
+Recommend exactly 6 books that align closely with the user's preferences.
+
+If leastFavoriteBooks is provided, do not recommend any books by the same authors.
+
+Try to cover all or most of the preferred genres across your recommendations.
+
+Avoid recommending multiple books from the same author.
+
+Diversify tone, themes, or subgenres if multiple books fall under the same genre.
+`;
+
+        if (excludedTitles && excludedTitles.length > 0) {
+            prompt += `
+- Do NOT recommend any of the following books as they have already been suggested: ${excludedTitles.join(', ')}
+`;
+        }
+
+        prompt += `
+Respond only in the following strict JSON format (no extra text or explanation):
 
 [
   {
