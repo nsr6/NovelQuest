@@ -41,16 +41,18 @@ export default function BookRecommendations({ recommendations, isLoading, hasSea
   return (
     <div className="mt-12">
       <div className="flex justify-center items-center mb-8">
-      <h2 className="text-4xl font-serif text-center text-dark-wood mb-8 border-b-2 border-gold-leaf pb-4">
-          Your Personalized Recommendations
-        </h2>
-        <button 
-          onClick={onRefresh} 
-          className="ml-4 text-dark-wood hover:text-gold-leaf transition-transform duration-300 hover:rotate-180"
-          title="Refresh Recommendations"
-        >
-          <RefreshCw className="w-7 h-7" />
-        </button>
+        <div className="flex items-center gap-4 border-b-2 border-gold-leaf pb-2">
+          <h2 className="text-4xl font-serif text-dark-wood text-center">
+            Your Personalized Recommendations
+          </h2>
+          <button
+            onClick={onRefresh}
+            className="text-dark-wood hover:text-gold-leaf transition-transform duration-300 hover:rotate-180"
+            title="Refresh Recommendations"
+          >
+            <RefreshCw className="w-7 h-7" />
+          </button>
+        </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {recommendations.map((book, index) => (
@@ -68,7 +70,7 @@ export default function BookRecommendations({ recommendations, isLoading, hasSea
                   <Book className="w-5 h-5 text-leather-brown" />
                 </div>
                 <h3 className="text-xl font-serif text-dark-wood flex-1 pr-24">{book.title}</h3>
-              </div>
+                </div>
               
               <div className="border-t border-b border-leather-brown border-dashed my-3 py-2">
                 <div className="flex items-center gap-2 text-dark-wood">
