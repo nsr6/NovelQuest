@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import BookRecommendationForm from '@/components/BookRecommendationForm';
 import BookRecommendations from '@/components/BookRecommendations';
 import { BookRecommendation } from '@/types/book';
@@ -11,6 +11,13 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const recommendationsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isLoading && hasSearched) {
+      recommendationsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [isLoading, hasSearched]);
 
   const handleGetRecommendations = async (preferences: any) => {
     setIsLoading(true);
@@ -53,11 +60,13 @@ export default function Home() {
               <p>{error}</p>
             </div>
           )}
-          <BookRecommendations
-            recommendations={recommendations}
-            isLoading={isLoading}
-            hasSearched={hasSearched}
-          />
+          <div ref={recommendationsRef}>
+            <BookRecommendations
+              recommendations={recommendations}
+              isLoading={isLoading}
+              hasSearched={hasSearched}
+            />
+          </div>
         </div>
       </main>
       <footer className="bg-dark-wood mt-16 border-t-4 border-gold-leaf">
