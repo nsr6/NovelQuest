@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
-import { Playfair_Display } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({ 
+  subsets: ["latin"],
+  variable: '--font-inter',
+});
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -26,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${playfair.variable} font-serif bg-bookshelf bg-cover bg-fixed`}>
+      <body className={`${inter.variable} ${playfair.variable} font-sans bg-bookshelf bg-cover bg-fixed`}>
         {children}
       </body>
     </html>

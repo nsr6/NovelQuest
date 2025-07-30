@@ -3,6 +3,16 @@
 import { useState, useRef, useEffect } from 'react';
 import { BookOpen, Heart, X, Star, User, ChevronDown, Check } from 'lucide-react';
 
+interface BookSuggestion {
+  key: string;
+  name: string;
+}
+
+interface AuthorSuggestion {
+  key: string;
+  name: string;
+}
+
 interface BookRecommendationFormProps {
   onSubmit: (preferences: {
     favoriteBooks: string;
@@ -15,25 +25,38 @@ interface BookRecommendationFormProps {
 
 export default function BookRecommendationForm({ onSubmit, isLoading }: BookRecommendationFormProps) {
   const [formData, setFormData] = useState({
+    favoriteBooks: [] as string[],
+    leastFavoriteBooks: [] as string[],
+    preferredGenres: [] as string[],
+    favoriteAuthors: [] as string[]
+  });
+
+  const [inputs, setInputs] = useState({
     favoriteBooks: '',
     leastFavoriteBooks: '',
-    preferredGenres: [] as string[],
-    favoriteAuthors: ''
+    favoriteAuthors: '',
   });
+
+  const [suggestions, setSuggestions] = useState<(BookSuggestion | AuthorSuggestion)[]>([]);
+  const [activeField, setActiveField] = useState<'favoriteBooks' | 'leastFavoriteBooks' | 'favoriteAuthors' | null>(null);
+  const autocompleteRef = useRef<HTMLDivElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({
-      ...formData,
+      favoriteBooks: formData.favoriteBooks.join(', '),
+      leastFavoriteBooks: formData.leastFavoriteBooks.join(', '),
       preferredGenres: formData.preferredGenres.join(', '),
+      favoriteAuthors: formData.favoriteAuthors.join(', '),
     });
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
+  const handleInputChange = (field: keyof typeof inputs, value: string) => {
+    setInputs(prev => ({
       ...prev,
       [field]: value
     }));
+    setActiveField(field);
   };
 
   const handleGenreChange = (genre: string) => {
@@ -54,12 +77,106 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
       if (genreDropdownRef.current && !genreDropdownRef.current.contains(event.target as Node)) {
         setIsGenreDropdownOpen(false);
       }
+      if (autocompleteRef.current && !autocompleteRef.current.contains(event.target as Node)) {
+        setActiveField(null);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [genreDropdownRef]);
+  }, [genreDropdownRef, autocompleteRef]);
+
+  const handleAddChip = (field: keyof typeof formData) => {
+    const value = inputs[field as keyof typeof inputs].trim();
+    if (value && !formData[field].includes(value)) {
+      setFormData(prev => ({
+        ...prev,
+        [field]: [...prev[field], value]
+      }));
+    }
+    setInputs(prev => ({ ...prev, [field as keyof typeof inputs]: '' }));
+    setSuggestions([]);
+  };
+
+  const handleRemoveChip = (field: keyof typeof formData, chipToRemove: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: prev[field].filter((chip: string) => chip !== chipToRemove)
+    }));
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, field: keyof typeof formData) => {
+    if ((e.key === 'Enter' || e.key === ',') && inputs[field as keyof typeof inputs]) {
+      e.preventDefault();
+      handleAddChip(field);
+    }
+  };
+
+  const handleSuggestionClick = (suggestion: BookSuggestion | AuthorSuggestion) => {
+    if (!activeField) return;
+    const field = activeField as keyof typeof formData;
+    
+    if (suggestion.name && !formData[field].includes(suggestion.name)) {
+       setFormData(prev => ({
+        ...prev,
+        [field]: [...prev[field], suggestion.name]
+      }));
+    }
+
+    setInputs(prev => ({ ...prev, [activeField as keyof typeof inputs]: '' }));
+    setActiveField(null);
+    setSuggestions([]);
+  };
+
+  useEffect(() => {
+    if (!activeField) {
+      setSuggestions([]);
+      return;
+    }
+
+    const searchTerm = inputs[activeField];
+
+    if (searchTerm.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+
+    const fetchSuggestions = async () => {
+      const isBookField = activeField.toLowerCase().includes('book');
+      try {
+        const response = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(searchTerm)}`);
+        const data = await response.json();
+        
+        let filteredSuggestions: (BookSuggestion | AuthorSuggestion)[];
+
+        if (isBookField) {
+          filteredSuggestions = data.docs
+            .filter((doc: any) => doc.title)
+            .map((doc: any) => ({ key: doc.key, name: doc.title }));
+        } else {
+          const allAuthors = data.docs.flatMap((doc: any) => doc.author_name || []);
+          const uniqueAuthors = [...new Set(allAuthors)] as string[];
+          filteredSuggestions = uniqueAuthors.map((authorName: string) => ({
+            key: authorName,
+            name: authorName,
+          }));
+        }
+        
+        const uniqueSuggestions = Array.from(new Map(filteredSuggestions.map(item => [item.name, item])).values());
+        setSuggestions(uniqueSuggestions.slice(0, 7));
+      } catch (error) {
+        console.error("Failed to fetch suggestions:", error);
+        setSuggestions([]);
+      }
+    };
+
+    const debounceTimer = setTimeout(() => {
+      fetchSuggestions();
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [inputs, activeField]);
 
   const genres = [
     'Fiction', 'Non-Fiction', 'Autobiography', 
@@ -84,30 +201,86 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
             <Heart className="w-5 h-5 text-red-700" />
             Favorite Books
           </label>
-          <input
-            type="text"
-            value={formData.favoriteBooks}
-            onChange={(e) => handleInputChange('favoriteBooks', e.target.value)}
-            placeholder="e.g., The Hobbit, Dune, Pride and Prejudice"
-            className="w-full px-4 py-3 bg-parchment border border-leather-brown rounded-md focus:ring-2 focus:ring-gold-leaf focus:border-transparent transition-all duration-200 text-dark-wood placeholder-gray-500"
-            required
-          />
-          <p className="text-sm text-dark-wood opacity-80">Separate multiple books with commas</p>
+          <div className="relative" ref={activeField === 'favoriteBooks' ? autocompleteRef : null}>
+            <div className="w-full px-2 py-2 bg-parchment border border-leather-brown rounded-md focus-within:ring-2 focus-within:ring-gold-leaf focus-within:border-transparent transition-all duration-200 text-dark-wood placeholder-gray-500 flex flex-wrap items-center gap-2">
+              {formData.favoriteBooks.map(book => (
+                <div key={book} className="flex items-center gap-2 bg-leather-brown text-parchment rounded-full px-3 py-1 text-sm font-serif">
+                  <span>{book}</span>
+                  <button type="button" onClick={() => handleRemoveChip('favoriteBooks', book)} className="text-parchment hover:text-gold-leaf">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+              <input
+                type="text"
+                value={inputs.favoriteBooks}
+                onFocus={() => setActiveField('favoriteBooks')}
+                onChange={(e) => handleInputChange('favoriteBooks', e.target.value)}
+                onKeyDown={(e) => handleKeyDown(e, 'favoriteBooks')}
+                placeholder="Books you love..."
+                className="flex-grow bg-transparent focus:outline-none text-dark-wood placeholder-gray-500 min-w-[150px]"
+                autoComplete="off"
+              />
+            </div>
+            {activeField === 'favoriteBooks' && suggestions.length > 0 && (
+              <div className="absolute z-20 w-full mt-1 bg-parchment border border-leather-brown rounded-md shadow-lg max-h-60 overflow-y-auto">
+                {suggestions.map(suggestion => (
+                  <button
+                    key={suggestion.key}
+                    type="button"
+                    onMouseDown={() => handleSuggestionClick(suggestion)}
+                    className="w-full text-left px-4 py-2 hover:bg-aged-paper font-serif text-dark-wood"
+                  >
+                    {suggestion.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Least Favorite Books */}
         <div className="space-y-2">
           <label className="flex items-center gap-2 text-lg font-serif text-dark-wood">
             <X className="w-5 h-5 text-gray-600" />
-            Least Favorite Books
+            Not-so-Favorite Books
           </label>
-          <input
-            type="text"
-            value={formData.leastFavoriteBooks}
-            onChange={(e) => handleInputChange('leastFavoriteBooks', e.target.value)}
-            placeholder="e.g., Twilight, Fifty Shades of Grey"
-            className="w-full px-4 py-3 bg-parchment border border-leather-brown rounded-md focus:ring-2 focus:ring-gold-leaf focus:border-transparent transition-all duration-200 text-dark-wood placeholder-gray-500"
-          />
+           <div className="relative" ref={activeField === 'leastFavoriteBooks' ? autocompleteRef : null}>
+            <div className="w-full px-2 py-2 bg-parchment border border-leather-brown rounded-md focus-within:ring-2 focus-within:ring-gold-leaf focus-within:border-transparent transition-all duration-200 text-dark-wood placeholder-gray-500 flex flex-wrap items-center gap-2">
+              {formData.leastFavoriteBooks.map(book => (
+                <div key={book} className="flex items-center gap-2 bg-leather-brown text-parchment rounded-full px-3 py-1 text-sm font-serif">
+                  <span>{book}</span>
+                  <button type="button" onClick={() => handleRemoveChip('leastFavoriteBooks', book)} className="text-parchment hover:text-gold-leaf">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+              <input
+                type="text"
+                value={inputs.leastFavoriteBooks}
+                onFocus={() => setActiveField('leastFavoriteBooks')}
+                onChange={(e) => handleInputChange('leastFavoriteBooks', e.target.value)}
+                onKeyDown={(e) => handleKeyDown(e, 'leastFavoriteBooks')}
+                placeholder="Books you didn't enjoy (optional)"
+                className="flex-grow bg-transparent focus:outline-none text-dark-wood placeholder-gray-500 min-w-[150px]"
+                autoComplete="off"
+              />
+            </div>
+            {activeField === 'leastFavoriteBooks' && suggestions.length > 0 && (
+              <div className="absolute z-20 w-full mt-1 bg-parchment border border-leather-brown rounded-md shadow-lg max-h-60 overflow-y-auto">
+                {suggestions.map(suggestion => (
+                  <button
+                    key={suggestion.key}
+                    type="button"
+                    onMouseDown={() => handleSuggestionClick(suggestion)}
+                    className="w-full text-left px-4 py-2 hover:bg-aged-paper font-serif text-dark-wood"
+                  >
+                    {suggestion.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <p className="text-sm text-dark-wood opacity-80">Books you didn't enjoy (optional)</p>
         </div>
 
@@ -168,7 +341,6 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
               </div>
             )}
           </div>
-          <p className="text-sm text-dark-wood opacity-80">Select all that apply</p>
         </div>
 
         {/* Favorite Authors */}
@@ -177,21 +349,48 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
             <User className="w-5 h-5 text-blue-700" />
             Favorite Authors
           </label>
-          <input
-            type="text"
-            value={formData.favoriteAuthors}
-            onChange={(e) => handleInputChange('favoriteAuthors', e.target.value)}
-            placeholder="e.g., J.R.R. Tolkien, Frank Herbert, Jane Austen"
-            className="w-full px-4 py-3 bg-parchment border border-leather-brown rounded-md focus:ring-2 focus:ring-gold-leaf focus:border-transparent transition-all duration-200 text-dark-wood placeholder-gray-500"
-            required
-          />
-          <p className="text-sm text-dark-wood opacity-80">Authors whose work you enjoy</p>
+           <div className="relative" ref={activeField === 'favoriteAuthors' ? autocompleteRef : null}>
+            <div className="w-full px-2 py-2 bg-parchment border border-leather-brown rounded-md focus-within:ring-2 focus-within:ring-gold-leaf focus-within:border-transparent transition-all duration-200 text-dark-wood placeholder-gray-500 flex flex-wrap items-center gap-2">
+              {formData.favoriteAuthors.map(author => (
+                <div key={author} className="flex items-center gap-2 bg-leather-brown text-parchment rounded-full px-3 py-1 text-sm font-serif">
+                  <span>{author}</span>
+                  <button type="button" onClick={() => handleRemoveChip('favoriteAuthors', author)} className="text-parchment hover:text-gold-leaf">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+              <input
+                type="text"
+                value={inputs.favoriteAuthors}
+                onFocus={() => setActiveField('favoriteAuthors')}
+                onChange={(e) => handleInputChange('favoriteAuthors', e.target.value)}
+                onKeyDown={(e) => handleKeyDown(e, 'favoriteAuthors')}
+                placeholder="Authors whose work you enjoy..."
+                className="flex-grow bg-transparent focus:outline-none text-dark-wood placeholder-gray-500 min-w-[150px]"
+                autoComplete="off"
+              />
+            </div>
+            {activeField === 'favoriteAuthors' && suggestions.length > 0 && (
+              <div className="absolute z-10 w-full mt-1 bg-parchment border border-leather-brown rounded-md shadow-lg max-h-60 overflow-y-auto">
+                {suggestions.map(suggestion => (
+                  <button
+                    key={suggestion.key}
+                    type="button"
+                    onMouseDown={() => handleSuggestionClick(suggestion)}
+                    className="w-full text-left px-4 py-2 hover:bg-aged-paper font-serif text-dark-wood"
+                  >
+                    {suggestion.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={isLoading || !formData.favoriteBooks || formData.preferredGenres.length === 0 || !formData.favoriteAuthors}
+          disabled={isLoading || formData.favoriteBooks.length === 0 || formData.preferredGenres.length === 0 || formData.favoriteAuthors.length === 0}
           className="w-full bg-leather-brown text-parchment font-serif font-semibold py-4 px-6 rounded-md hover:bg-dark-wood disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105 shadow-lg border-b-4 border-dark-wood active:border-b-0"
         >
           {isLoading ? (

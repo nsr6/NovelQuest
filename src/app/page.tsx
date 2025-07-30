@@ -10,10 +10,12 @@ export default function Home() {
   const [recommendations, setRecommendations] = useState<BookRecommendation[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
 
   const handleGetRecommendations = async (preferences: any) => {
     setIsLoading(true);
     setError(null);
+    setHasSearched(true);
     try {
       const response = await fetch('/api', {
         method: 'POST',
@@ -54,12 +56,18 @@ export default function Home() {
           <BookRecommendations
             recommendations={recommendations}
             isLoading={isLoading}
+            hasSearched={hasSearched}
           />
         </div>
       </main>
-      <footer className="bg-dark-wood bg-opacity-80 border-t border-gold-leaf mt-12">
+      <footer className="bg-dark-wood mt-16 border-t-4 border-gold-leaf">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-parchment">
-          <p>© 2025 NovelQuest. Powered by AI for better reading experiences.</p>
+          <p className="font-serif text-lg mb-2">&copy; 2025 NovelQuest</p>
+          <p className="text-sm text-parchment opacity-80">
+            Crafted with ❤️ by{" "}
+              Catabyss
+            . Powered by AI for better reading experiences.
+          </p>
         </div>
       </footer>
     </div>

@@ -21,18 +21,20 @@ You are a helpful book recommendation assistant. Based on the following user pre
 - Preferred Genres: ${preferredGenres}
 - Favorite Authors: ${favoriteAuthors}
 
-Please recommend exactly 6 books. Respond only in the following strict JSON format (no extra text or explanation):
+Please recommend exactly 6 books. Do not recommend any books written by the author of their least favorite books. Make sure the recommendations include almost all the preferred genres. Respond only in the following strict JSON format (no extra text or explanation):
 
 [
   {
     "title": "Book Title 1",
     "author": "Author Name",
-    "genre": "Genre"
+    "genre": "Genre",
+    "description": "A brief, one-sentence description of the book."
   },
   {
     "title": "Book Title 2",
     "author": "Author Name",
-    "genre": "Genre"
+    "genre": "Genre",
+    "description": "A brief, one-sentence description of the book."
   }
   ...
 ]
