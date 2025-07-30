@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { BookOpen, Heart, X, Star, User, ChevronDown, Check } from 'lucide-react';
+import { BookOpen, Heart, X, Star, User, ChevronDown, Check, HelpCircle } from 'lucide-react';
 
 interface BookSuggestion {
   key: string;
@@ -200,6 +200,12 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
           <label className="flex items-center gap-2 text-lg font-serif text-dark-wood">
             <Heart className="w-5 h-5 text-red-700" />
             Favorite Books
+            <div className="relative group flex items-center ml-1">
+              <HelpCircle className="w-4 h-4 text-gray-500 cursor-help" />
+              <div className="absolute bottom-full mb-2 w-max max-w-xs px-3 py-1.5 text-sm text-parchment bg-dark-wood rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-normal">
+                Add at least 2 favourite books to get better results
+              </div>
+            </div>
           </label>
           <div className="relative" ref={activeField === 'favoriteBooks' ? autocompleteRef : null}>
             <div className="w-full px-2 py-2 bg-parchment border border-leather-brown rounded-md focus-within:ring-2 focus-within:ring-gold-leaf focus-within:border-transparent transition-all duration-200 text-dark-wood placeholder-gray-500 flex flex-wrap items-center gap-2">
@@ -218,7 +224,7 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
                 onChange={(e) => handleInputChange('favoriteBooks', e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, 'favoriteBooks')}
                 placeholder="Books you love..."
-                className="flex-grow bg-transparent focus:outline-none text-dark-wood placeholder-gray-500 min-w-[150px]"
+                className="flex-1 bg-transparent focus:outline-none text-dark-wood placeholder-gray-500 min-w-[120px]"
                 autoComplete="off"
               />
             </div>
@@ -244,6 +250,12 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
           <label className="flex items-center gap-2 text-lg font-serif text-dark-wood">
             <X className="w-5 h-5 text-gray-600" />
             Not-so-Favorite Books
+            <div className="relative group flex items-center ml-1">
+              <HelpCircle className="w-4 h-4 text-gray-500 cursor-help" />
+              <div className="absolute bottom-full mb-2 w-max max-w-xs px-3 py-1.5 text-sm text-parchment bg-dark-wood rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-normal">
+                Add 2 or more not-so-favorite books to get better results
+              </div>
+            </div>
           </label>
            <div className="relative" ref={activeField === 'leastFavoriteBooks' ? autocompleteRef : null}>
             <div className="w-full px-2 py-2 bg-parchment border border-leather-brown rounded-md focus-within:ring-2 focus-within:ring-gold-leaf focus-within:border-transparent transition-all duration-200 text-dark-wood placeholder-gray-500 flex flex-wrap items-center gap-2">
@@ -262,7 +274,7 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
                 onChange={(e) => handleInputChange('leastFavoriteBooks', e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, 'leastFavoriteBooks')}
                 placeholder="Books you didn't enjoy (optional)"
-                className="flex-grow bg-transparent focus:outline-none text-dark-wood placeholder-gray-500 min-w-[150px]"
+                className="flex-1 bg-transparent focus:outline-none text-dark-wood placeholder-gray-500 min-w-[120px]"
                 autoComplete="off"
               />
             </div>
@@ -281,7 +293,6 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
               </div>
             )}
           </div>
-          <p className="text-sm text-dark-wood opacity-80">Books you didn't enjoy (optional)</p>
         </div>
 
         {/* Preferred Genres */}
@@ -348,6 +359,12 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
           <label className="flex items-center gap-2 text-lg font-serif text-dark-wood">
             <User className="w-5 h-5 text-blue-700" />
             Favorite Authors
+            <div className="relative group flex items-center ml-1">
+              <HelpCircle className="w-4 h-4 text-gray-500 cursor-help" />
+              <div className="absolute bottom-full mb-2 w-max max-w-xs px-3 py-1.5 text-sm text-parchment bg-dark-wood rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-normal">
+                Add your favorite authors to get better results
+              </div>
+            </div>
           </label>
            <div className="relative" ref={activeField === 'favoriteAuthors' ? autocompleteRef : null}>
             <div className="w-full px-2 py-2 bg-parchment border border-leather-brown rounded-md focus-within:ring-2 focus-within:ring-gold-leaf focus-within:border-transparent transition-all duration-200 text-dark-wood placeholder-gray-500 flex flex-wrap items-center gap-2">
@@ -365,8 +382,8 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
                 onFocus={() => setActiveField('favoriteAuthors')}
                 onChange={(e) => handleInputChange('favoriteAuthors', e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, 'favoriteAuthors')}
-                placeholder="Authors whose work you enjoy..."
-                className="flex-grow bg-transparent focus:outline-none text-dark-wood placeholder-gray-500 min-w-[150px]"
+                placeholder="Authors whose work you enjoy (optional)"
+                className="flex-1 bg-transparent focus:outline-none text-dark-wood placeholder-gray-500 min-w-[120px]"
                 autoComplete="off"
               />
             </div>
@@ -390,7 +407,7 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={isLoading || formData.favoriteBooks.length === 0 || formData.preferredGenres.length === 0 || formData.favoriteAuthors.length === 0}
+          disabled={isLoading || formData.favoriteBooks.length === 0 || formData.preferredGenres.length === 0}
           className="w-full bg-leather-brown text-parchment font-serif font-semibold py-4 px-6 rounded-md hover:bg-dark-wood disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105 shadow-lg border-b-4 border-dark-wood active:border-b-0"
         >
           {isLoading ? (

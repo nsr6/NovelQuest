@@ -11,33 +11,32 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const [lastPreferences, setLastPreferences] = useState<any>(null);
+  const [previouslyRecommended, setPreviouslyRecommended] = useState<string[]>([]);
   const recommendationsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isLoading && hasSearched) {
       recommendationsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [isLoading, hasSearched]);
+  }, [isLoading, hasSearched, recommendations]);
 
-  const handleGetRecommendations = async (preferences: any) => {
+  const fetchApiRecommendations = async (preferences: any, excludedTitles: string[]) => {
     setIsLoading(true);
     setError(null);
-    setHasSearched(true);
     try {
       const response = await fetch('/api', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(preferences),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...preferences, excludedTitles }),
       });
-
       if (!response.ok) {
         throw new Error('Failed to get recommendations');
       }
 
-      const data = await response.json();
+      const data: BookRecommendation[] = await response.json();
       setRecommendations(data);
+      setPreviouslyRecommended(prev => [...new Set([...prev, ...data.map(b => b.title)])]);
     } catch (err: any) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       setRecommendations([]);
@@ -46,13 +45,26 @@ export default function Home() {
     }
   };
 
+  const handleNewSearch = async (preferences: any) => {
+    setHasSearched(true);
+    setLastPreferences(preferences);
+    setPreviouslyRecommended([]);
+    await fetchApiRecommendations(preferences, []);
+  };
+
+  const handleRefresh = () => {
+    if (lastPreferences) {
+      fetchApiRecommendations(lastPreferences, previouslyRecommended);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black bg-opacity-50">
       <Header />
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-parchment bg-opacity-90 p-8 rounded-lg shadow-lg">
+        <div className="bg-parchment bg-opacity-90 p-4 sm:p-8 rounded-lg shadow-lg">
           <BookRecommendationForm
-            onSubmit={handleGetRecommendations}
+            onSubmit={handleNewSearch}
             isLoading={isLoading}
           />
           {error && (
@@ -65,6 +77,7 @@ export default function Home() {
               recommendations={recommendations}
               isLoading={isLoading}
               hasSearched={hasSearched}
+              onRefresh={handleRefresh}
             />
           </div>
         </div>

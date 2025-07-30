@@ -10,17 +10,25 @@ const groq = new Groq({
 export async function POST(req: NextRequest) {
     try {
         // 1. Read the request body
-        const { favoriteBooks, leastFavoriteBooks, preferredGenres, favoriteAuthors } = await req.json();
+        const { favoriteBooks, leastFavoriteBooks, preferredGenres, favoriteAuthors, excludedTitles } = await req.json();
 
         // 2. Create the prompt for the AI
-        const prompt = `
+        let prompt = `
 You are a helpful book recommendation assistant. Based on the following user preferences:
 
 - Favorite Books: ${favoriteBooks}
 - Least Favorite Books: ${leastFavoriteBooks}
 - Preferred Genres: ${preferredGenres}
 - Favorite Authors: ${favoriteAuthors}
+`;
 
+        if (excludedTitles && excludedTitles.length > 0) {
+            prompt += `
+- Do NOT recommend any of the following books as they have already been suggested: ${excludedTitles.join(', ')}
+`;
+        }
+
+        prompt += `
 Please recommend exactly 6 books. Do not recommend any books written by the author of their least favorite books. Make sure the recommendations include almost all the preferred genres. Respond only in the following strict JSON format (no extra text or explanation):
 
 [

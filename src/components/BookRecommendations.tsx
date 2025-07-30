@@ -1,15 +1,16 @@
 'use client';
 
 import { BookRecommendation } from '@/types/book';
-import { Book, User, Feather } from 'lucide-react';
+import { Book, User, Feather, RefreshCw } from 'lucide-react';
 
 interface BookRecommendationsProps {
   recommendations: BookRecommendation[];
   isLoading: boolean;
   hasSearched: boolean;
+  onRefresh: () => void;
 }
 
-export default function BookRecommendations({ recommendations, isLoading, hasSearched }: BookRecommendationsProps) {
+export default function BookRecommendations({ recommendations, isLoading, hasSearched, onRefresh }: BookRecommendationsProps) {
   if (isLoading) {
     return (
       <div className="text-center py-12">
@@ -39,27 +40,37 @@ export default function BookRecommendations({ recommendations, isLoading, hasSea
 
   return (
     <div className="mt-12">
-      <h2 className="text-4xl font-serif text-center text-dark-wood mb-8 border-b-2 border-gold-leaf pb-4">
-        Your Personalized Recommendations
-      </h2>
+      <div className="flex justify-center items-center mb-8">
+        <h2 className="text-4xl font-serif text-center text-dark-wood border-b-2 border-gold-leaf pb-4">
+          Your Personalized Recommendations
+        </h2>
+        <button 
+          onClick={onRefresh} 
+          className="ml-4 text-dark-wood hover:text-gold-leaf transition-transform duration-300 hover:rotate-180"
+          title="Refresh Recommendations"
+        >
+          <RefreshCw className="w-7 h-7" />
+        </button>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {recommendations.map((book, index) => (
           <div 
             key={index} 
             className="group bg-parchment p-4 rounded-lg shadow-lg border border-leather-brown flex flex-col transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl"
           >
-            <div className="relative flex-grow mb-4">
-              <div className="absolute top-0 right-[-1rem] bg-gold-leaf py-0.5 px-3 rounded-l-md shadow">
-                <span className="font-serif text-xs text-dark-wood font-semibold tracking-wide">{book.genre}</span>
+            <div className="flex-grow mb-4">
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="bg-aged-paper p-2 rounded-full ring-1 ring-leather-brown flex-shrink-0">
+                    <Book className="w-5 h-5 text-leather-brown" />
+                  </div>
+                  <h3 className="text-xl font-serif text-dark-wood">{book.title}</h3>
+                </div>
+                <div className="bg-gold-leaf py-0.5 px-3 rounded-l-md shadow whitespace-nowrap">
+                  <span className="font-serif text-xs text-dark-wood font-semibold tracking-wide">{book.genre}</span>
+                </div>
               </div>
               
-              <div className="flex items-center gap-3 mb-3">
-                <div className="bg-aged-paper p-2 rounded-full ring-1 ring-leather-brown">
-                  <Book className="w-5 h-5 text-leather-brown" />
-                </div>
-                <h3 className="text-xl font-serif text-dark-wood flex-1 pr-24">{book.title}</h3>
-              </div>
-
               <div className="border-t border-b border-leather-brown border-dashed my-3 py-2">
                 <div className="flex items-center gap-2 text-dark-wood">
                   <User className="w-4 h-4 flex-shrink-0" />
