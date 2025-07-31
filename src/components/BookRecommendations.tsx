@@ -42,7 +42,7 @@ export default function BookRecommendations({ recommendations, isLoading, hasSea
     <div className="mt-12">
       <div className="flex justify-center items-center mb-8">
         <div className="flex items-center gap-4 border-b-2 border-gold-leaf pb-2">
-          <h2 className="text-4xl font-serif text-dark-wood text-center">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif text-dark-wood text-center">
             Your Personalized Recommendations
           </h2>
           <button

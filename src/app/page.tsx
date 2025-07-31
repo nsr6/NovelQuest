@@ -8,7 +8,8 @@ import Header from '@/components/Header';
 
 export default function Home() {
   const [recommendations, setRecommendations] = useState<BookRecommendation[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [lastPreferences, setLastPreferences] = useState<any>(null);
@@ -16,14 +17,12 @@ export default function Home() {
   const recommendationsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!isLoading && hasSearched) {
+    if (!(isSubmitting || isRefreshing) && hasSearched) {
       recommendationsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [isLoading, hasSearched, recommendations]);
+  }, [isSubmitting, isRefreshing, hasSearched, recommendations]);
 
-  const fetchApiRecommendations = async (preferences: any, excludedTitles: string[]) => {
-    setIsLoading(true);
-    setError(null);
+  const fetchRecommendationsLogic = async (preferences: any, excludedTitles: string[]) => {
     try {
       const response = await fetch('/api', {
         method: 'POST',
@@ -40,8 +39,6 @@ export default function Home() {
     } catch (err: any) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       setRecommendations([]);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -49,24 +46,32 @@ export default function Home() {
     setHasSearched(true);
     setLastPreferences(preferences);
     setPreviouslyRecommended([]);
-    await fetchApiRecommendations(preferences, []);
+    setError(null);
+    setIsSubmitting(true);
+    await fetchRecommendationsLogic(preferences, []);
+    setIsSubmitting(false);
   };
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     if (lastPreferences) {
-      fetchApiRecommendations(lastPreferences, previouslyRecommended);
+      setError(null);
+      setIsRefreshing(true);
+      await fetchRecommendationsLogic(lastPreferences, previouslyRecommended);
+      setIsRefreshing(false);
     }
   };
 
+  const isLoading = isSubmitting || isRefreshing;
+
   return (
-    <div className="relative min-h-screen bg-bookshelf bg-cover bg-center sm:bg-fixed bg-scroll">
+    <div className="relative min-h-screen bg-bookshelf bg-cover bg-center bg-fixed">
       <div className="bg-overlay flex-grow flex flex-col">
         <Header />
         <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow">
           <div className="bg-parchment bg-opacity-90 p-4 sm:p-8 rounded-lg shadow-lg">
             <BookRecommendationForm
               onSubmit={handleNewSearch}
-              isLoading={isLoading}
+              isLoading={isSubmitting}
             />
             {error && (
               <div className="text-center text-red-700 bg-red-100 p-4 rounded-lg">

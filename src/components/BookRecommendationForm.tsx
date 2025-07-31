@@ -71,6 +71,7 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
 
   const [isGenreDropdownOpen, setIsGenreDropdownOpen] = useState(false);
   const genreDropdownRef = useRef<HTMLDivElement>(null);
+  const [genreSearch, setGenreSearch] = useState('');
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -181,8 +182,30 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
   const genres = [
     'Fiction', 'Non-Fiction', 'Autobiography', 
     'Fantasy', 'Sci-Fi', 'Mystery', 
-    'Crime', 'History', 'Romance', 'Horror', 'Thriller', 'Biography', 'Memoir', 'Self-Help', 'Cooking', 'Travel', 'Children'
+    'Crime', 'History', 'Romance', 'Horror', 'Thriller', 'Biography', 'Memoir', 'Self-Help', 'Cooking', 'Travel', 'Children',
+    'Manga', 'Graphic Novel', 'Comic Book', 'Manhwa', 'Manhua'
   ];
+
+  const filteredGenres = genres.filter(genre =>
+    genre.toLowerCase().includes(genreSearch.toLowerCase())
+  );
+
+  const showCustomOptionFavoriteBooks =
+    inputs.favoriteBooks.trim().length > 0 &&
+    !formData.favoriteBooks.includes(inputs.favoriteBooks.trim()) &&
+    !suggestions.some(s => s.name === inputs.favoriteBooks.trim());
+  const showCustomOptionLeastFavoriteBooks =
+    inputs.leastFavoriteBooks.trim().length > 0 &&
+    !formData.leastFavoriteBooks.includes(inputs.leastFavoriteBooks.trim()) &&
+    !suggestions.some(s => s.name === inputs.leastFavoriteBooks.trim());
+  const showCustomOptionFavoriteAuthors =
+    inputs.favoriteAuthors.trim().length > 0 &&
+    !formData.favoriteAuthors.includes(inputs.favoriteAuthors.trim()) &&
+    !suggestions.some(s => s.name === inputs.favoriteAuthors.trim());
+  const showCustomOptionGenre =
+    genreSearch.trim().length > 0 &&
+    !formData.preferredGenres.includes(genreSearch.trim()) &&
+    !genres.some(g => g.toLowerCase() === genreSearch.trim().toLowerCase());
 
   return (
     <div className="bg-aged-paper rounded-lg p-8 mb-8 border border-leather-brown shadow-inner">
@@ -202,7 +225,7 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
             Favorite Books
             <div className="relative group flex items-center ml-1">
               <HelpCircle className="w-4 h-4 text-gray-500 cursor-help" />
-              <div className="absolute bottom-full mb-2 w-max max-w-xs px-3 py-1.5 text-sm text-parchment bg-dark-wood rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-normal">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 max-w-[90vw] px-3 py-1.5 text-xs sm:text-sm text-parchment bg-dark-wood rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-normal break-words text-center z-20">
                 Add at least 2 favourite books to get better results
               </div>
             </div>
@@ -228,8 +251,17 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
                 autoComplete="off"
               />
             </div>
-            {activeField === 'favoriteBooks' && suggestions.length > 0 && (
+            {activeField === 'favoriteBooks' && (suggestions.length > 0 || showCustomOptionFavoriteBooks) && (
               <div className="absolute z-20 w-full mt-1 bg-parchment border border-leather-brown rounded-md shadow-lg max-h-60 overflow-y-auto">
+                {showCustomOptionFavoriteBooks && (
+                  <button
+                    type="button"
+                    className="w-full text-left px-4 py-2 hover:bg-aged-paper font-serif text-dark-wood font-semibold"
+                    onMouseDown={() => handleAddChip('favoriteBooks')}
+                  >
+                    <span>{inputs.favoriteBooks.trim()}</span>
+                  </button>
+                )}
                 {suggestions.map(suggestion => (
                   <button
                     key={suggestion.key}
@@ -252,7 +284,7 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
             Not-so-Favorite Books
             <div className="relative group flex items-center ml-1">
               <HelpCircle className="w-4 h-4 text-gray-500 cursor-help" />
-              <div className="absolute bottom-full mb-2 w-max max-w-xs px-3 py-1.5 text-sm text-parchment bg-dark-wood rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-normal">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 max-w-[90vw] px-3 py-1.5 text-xs sm:text-sm text-parchment bg-dark-wood rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-normal break-words text-center z-20">
                 Add 2 or more not-so-favorite books to get better results
               </div>
             </div>
@@ -278,8 +310,17 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
                 autoComplete="off"
               />
             </div>
-            {activeField === 'leastFavoriteBooks' && suggestions.length > 0 && (
+            {activeField === 'leastFavoriteBooks' && (suggestions.length > 0 || showCustomOptionLeastFavoriteBooks) && (
               <div className="absolute z-20 w-full mt-1 bg-parchment border border-leather-brown rounded-md shadow-lg max-h-60 overflow-y-auto">
+                {showCustomOptionLeastFavoriteBooks && (
+                  <button
+                    type="button"
+                    className="w-full text-left px-4 py-2 hover:bg-aged-paper font-serif text-dark-wood font-semibold"
+                    onMouseDown={() => handleAddChip('leastFavoriteBooks')}
+                  >
+                    <span>{inputs.leastFavoriteBooks.trim()}</span>
+                  </button>
+                )}
                 {suggestions.map(suggestion => (
                   <button
                     key={suggestion.key}
@@ -303,52 +344,85 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
             Preferred Genres
           </label>
           <div className="relative" ref={genreDropdownRef}>
-            <button
-              type="button"
-              onClick={() => setIsGenreDropdownOpen(!isGenreDropdownOpen)}
-              className="w-full bg-parchment border border-leather-brown rounded-md focus:ring-2 focus:ring-gold-leaf focus:border-transparent transition-all duration-200 text-dark-wood flex justify-between items-center min-h-[50px] px-2"
+            <div
+              className="w-full px-2 py-2 bg-parchment border border-leather-brown rounded-md focus-within:ring-2 focus-within:ring-gold-leaf focus-within:border-transparent transition-all duration-200 text-dark-wood flex flex-wrap items-center gap-2"
+              onClick={() => {
+                // Focus the input when the container is clicked
+                const input = document.getElementById('genre-input');
+                input && input.focus();
+              }}
+              tabIndex={0}
+              role="combobox"
+              aria-expanded={isGenreDropdownOpen}
             >
-              <div className="flex flex-wrap gap-1.5">
-                {formData.preferredGenres.length > 0 
-                  ? formData.preferredGenres.map(genre => (
-                      <div key={genre} className="flex items-center gap-1.5 bg-leather-brown text-parchment rounded-full px-2.5 py-0.5 text-sm font-serif">
-                        <span>{genre}</span>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleGenreChange(genre);
-                          }}
-                          className="text-parchment hover:text-gold-leaf"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                  ))
-                  : <span className="text-gray-500 px-2">Select genres...</span>
-                }
-              </div>
-              <ChevronDown className={`w-5 h-5 text-dark-wood transition-transform ml-auto ${isGenreDropdownOpen ? 'rotate-180' : ''}`} />
-            </button>
-            
+              {formData.preferredGenres.map(genre => (
+                <div key={genre} className="flex items-center gap-1.5 bg-leather-brown text-parchment rounded-full px-2.5 py-0.5 text-sm font-serif">
+                  <span>{genre}</span>
+                  <button
+                    type="button"
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleGenreChange(genre);
+                    }}
+                    className="text-parchment hover:text-gold-leaf"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+              <input
+                id="genre-input"
+                type="text"
+                value={genreSearch}
+                onChange={e => {
+                  setGenreSearch(e.target.value);
+                  setIsGenreDropdownOpen(true);
+                }}
+                onFocus={() => setIsGenreDropdownOpen(true)}
+                placeholder={formData.preferredGenres.length === 0 ? "Search or select genres..." : ""}
+                className="flex-1 bg-transparent focus:outline-none text-dark-wood placeholder-gray-500 min-w-[100px]"
+                autoComplete="off"
+              />
+            </div>
             {isGenreDropdownOpen && (
               <div className="absolute z-10 w-full mt-1 bg-parchment border border-leather-brown rounded-md shadow-lg max-h-60 overflow-y-auto">
                 <div className="p-2 flex flex-col gap-1">
-                  {genres.map((genre) => (
+                  {showCustomOptionGenre && (
                     <button
-                      key={genre}
                       type="button"
-                      onClick={() => handleGenreChange(genre)}
-                      className={`w-full text-left px-3 py-2 rounded-md font-serif text-dark-wood transition-colors flex items-center justify-between ${
-                        formData.preferredGenres.includes(genre)
-                          ? 'bg-aged-paper font-bold'
-                          : 'hover:bg-aged-paper'
-                      }`}
+                      className="w-full text-left px-3 py-2 rounded-md font-serif text-dark-wood font-semibold hover:bg-aged-paper"
+                      onMouseDown={() => {
+                        handleGenreChange(genreSearch.trim());
+                        setGenreSearch('');
+                        setIsGenreDropdownOpen(false);
+                      }}
                     >
-                       <span>{genre}</span>
-                       {formData.preferredGenres.includes(genre) && <Check className="w-5 h-5 text-leather-brown" />}
+                      <span>{genreSearch.trim()}</span>
                     </button>
-                  ))}
+                  )}
+                  {filteredGenres.length > 0 ? (
+                    filteredGenres.map((genre) => (
+                      <button
+                        key={genre}
+                        type="button"
+                        onClick={() => {
+                          handleGenreChange(genre);
+                          setGenreSearch('');
+                          setIsGenreDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-md font-serif text-dark-wood transition-colors flex items-center justify-between ${
+                          formData.preferredGenres.includes(genre)
+                            ? 'bg-aged-paper font-bold'
+                            : 'hover:bg-aged-paper'
+                        }`}
+                      >
+                        <span>{genre}</span>
+                        {formData.preferredGenres.includes(genre) && <Check className="w-5 h-5 text-leather-brown" />}
+                      </button>
+                    ))
+                  ) : (
+                    !showCustomOptionGenre && <span className="text-gray-500 px-3 py-2">No genres found.</span>
+                  )}
                 </div>
               </div>
             )}
@@ -362,7 +436,7 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
             Favorite Authors
             <div className="relative group flex items-center ml-1">
               <HelpCircle className="w-4 h-4 text-gray-500 cursor-help" />
-              <div className="absolute bottom-full mb-2 w-max max-w-xs px-3 py-1.5 text-sm text-parchment bg-dark-wood rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-normal">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 max-w-[90vw] px-3 py-1.5 text-xs sm:text-sm text-parchment bg-dark-wood rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-normal break-words text-center z-20">
                 Add your favorite authors to get better results
               </div>
             </div>
@@ -388,8 +462,17 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
                 autoComplete="off"
               />
             </div>
-            {activeField === 'favoriteAuthors' && suggestions.length > 0 && (
+            {activeField === 'favoriteAuthors' && (suggestions.length > 0 || showCustomOptionFavoriteAuthors) && (
               <div className="absolute z-10 w-full mt-1 bg-parchment border border-leather-brown rounded-md shadow-lg max-h-60 overflow-y-auto">
+                {showCustomOptionFavoriteAuthors && (
+                  <button
+                    type="button"
+                    className="w-full text-left px-4 py-2 hover:bg-aged-paper font-serif text-dark-wood font-semibold"
+                    onMouseDown={() => handleAddChip('favoriteAuthors')}
+                  >
+                    <span>{inputs.favoriteAuthors.trim()}</span>
+                  </button>
+                )}
                 {suggestions.map(suggestion => (
                   <button
                     key={suggestion.key}
