@@ -60,17 +60,17 @@ export default function BookRecommendations({ recommendations, isLoading, hasSea
             key={index} 
             className="group bg-parchment p-4 rounded-lg shadow-lg border border-leather-brown flex flex-col transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl"
           >
-            <div className="relative flex-grow mb-4">
+            <div className="relative flex-grow mb-4 pt-7">
               <div className="absolute top-0 right-[-1rem] bg-gold-leaf py-0.5 px-3 rounded-l-md shadow">
                   <span className="font-serif text-xs text-dark-wood font-semibold tracking-wide">{book.genre}</span>
-                </div>
+              </div>
               
               <div className="flex items-center gap-3 mb-3">
                 <div className="bg-aged-paper p-2 rounded-full ring-1 ring-leather-brown">
                   <Book className="w-5 h-5 text-leather-brown" />
                 </div>
                 <h3 className="text-xl font-serif text-dark-wood flex-1 pr-24">{book.title}</h3>
-                </div>
+              </div>
               
               <div className="border-t border-b border-leather-brown border-dashed my-3 py-2">
                 <div className="flex items-center gap-2 text-dark-wood">

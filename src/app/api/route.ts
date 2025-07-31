@@ -26,13 +26,14 @@ Favorite Authors: ${favoriteAuthors} (optional)
 
 Rules:
 
-Recommend exactly 6 books that align closely with the user's preferences.
+1. Recommend exactly 6 books that align closely with the user's preferences.
 
-If leastFavoriteBooks is provided, do not recommend any books by the same authors.
+2.If leastFavoriteBooks is provided, do not recommend any books by the same authors.
 
-Try to cover all or most of the preferred genres across your recommendations.
+3.Try to cover all or most of the preferred genres across your recommendations.
 
-Avoid recommending multiple books from the same author.
+4.Avoid recommending multiple books from the same author.
+5. Only recommend books from the genre the user has selected.
 
 Diversify tone, themes, or subgenres if multiple books fall under the same genre.
 `;
