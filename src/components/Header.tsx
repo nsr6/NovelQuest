@@ -31,8 +31,8 @@ export default function Header() {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-          <div className="bg-parchment rounded-lg p-8 max-w-md w-full shadow-2xl border-2 border-gold-leaf">
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+          <div className="bg-parchment rounded-lg p-4 sm:p-8 max-w-sm w-full shadow-2xl border-2 border-gold-leaf">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-2xl font-serif text-dark-wood">About NovelQuest</h3>
               <button
@@ -45,7 +45,7 @@ export default function Header() {
             <p className="text-dark-wood leading-relaxed">
               As a lifelong book lover, I often found myself overwhelmed by endless book lists and unsure of what to read next. Despite loving literature, it was hard to discover books that truly resonated with me. 
               <br/> That’s why I created NovelQuest — a place for readers like me, who crave thoughtful, personalized recommendations. 
-              <br/>Powered by advanced AI, NovelQuest analyzes your reading preferences to help you uncover books and authors you'll genuinely connect with. It's my way of blending a love for storytelling with technology.
+              <br/>Powered by advanced AI, NovelQuest analyzes your reading preferences to help you uncover books and authors you'll genuinely connect with. It's my way of blending my love for storytelling with technology.
             </p>
           </div>
         </div>

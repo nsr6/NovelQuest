@@ -10,11 +10,39 @@ const groq = new Groq({
 export async function POST(req: NextRequest) {
     try {
         // 1. Read the request body
-        const { favoriteBooks, leastFavoriteBooks, preferredGenres, favoriteAuthors, excludedTitles } = await req.json();
+        const { favoriteBooks, leastFavoriteBooks, preferredGenres, favoriteAuthors, excludedTitles, mood, requestType } = await req.json();
 
         // 2. Create the prompt for the AI
-        let prompt = `
-        You are a helpful and knowledgeable book recommendation assistant. Based on the user's preferences below, recommend exactly 6 books that match their taste. Use the following inputs (some may be empty or missing):
+        let prompt;
+        
+        if (requestType === 'mood') {
+            // Mood-based recommendation prompt
+            prompt = `
+            You are a helpful and knowledgeable book recommendation assistant. Based on the user's current mood, recommend exactly 6 books that would be perfect for someone feeling ${mood}. 
+
+Current Mood: ${mood}
+
+Rules:
+1. Recommend exactly 6 books that match the emotional tone and themes appropriate for someone feeling ${mood}.
+2. Choose books that would either complement or positively influence this mood.
+3. Include a variety of genres but ensure they all align with the ${mood} mood.
+4. Avoid recommending multiple books from the same author.
+5. Each book should have a description that explains why it's perfect for this mood.
+6. Consider both fiction and non-fiction options that would resonate with this emotional state.
+
+Examples of mood-appropriate themes:
+- Happy: Uplifting stories, feel-good narratives, comedic novels, inspiring memoirs
+- Sad: Cathartic reads, emotional depth, healing narratives, books about overcoming adversity  
+- Romantic: Love stories, romantic comedies, passionate dramas, relationship-focused narratives
+- Adventurous: Action-packed plots, exploration stories, thrillers, epic journeys
+- Contemplative: Philosophical works, introspective fiction, spiritual texts, thought-provoking literature
+- Mysterious: Mystery novels, psychological thrillers, detective stories, suspenseful narratives
+- Nostalgic: Coming-of-age stories, historical fiction, memoirs, books about simpler times
+`;
+        } else {
+            // Personalized recommendation prompt
+            prompt = `
+            You are a helpful and knowledgeable book recommendation assistant. Based on the user's preferences below, recommend exactly 6 books that match their taste. Use the following inputs (some may be empty or missing):
 
 Favorite Books: ${favoriteBooks}
 
@@ -37,6 +65,7 @@ Rules:
 
 Diversify tone, themes, or subgenres if multiple books fall under the same genre.
 `;
+        }
 
         if (excludedTitles && excludedTitles.length > 0) {
             prompt += `

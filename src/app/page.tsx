@@ -24,10 +24,15 @@ export default function Home() {
 
   const fetchRecommendationsLogic = async (preferences: any, excludedTitles: string[]) => {
     try {
+      // Include excludedTitles for both mood-based and personalized requests
+      const requestBody = preferences.requestType === 'mood' 
+        ? { ...preferences, excludedTitles }
+        : { ...preferences, excludedTitles, requestType: 'personalized' };
+
       const response = await fetch('/api', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...preferences, excludedTitles }),
+        body: JSON.stringify(requestBody),
       });
       if (!response.ok) {
         throw new Error('Failed to get recommendations');

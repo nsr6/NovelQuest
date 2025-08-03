@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { BookOpen, Heart, X, Star, User, ChevronDown, Check, HelpCircle } from 'lucide-react';
+import { BookOpen, Heart, X, Star, User, ChevronDown, Check, HelpCircle, Smile, Frown, Heart as HeartIcon, Compass, Coffee, Search, Clock, Sun } from 'lucide-react';
 
 interface BookSuggestion {
   key: string;
@@ -19,11 +19,20 @@ interface BookRecommendationFormProps {
     leastFavoriteBooks: string;
     preferredGenres: string;
     favoriteAuthors: string;
+  } | {
+    mood: string;
+    requestType: 'mood';
   }) => void;
   isLoading: boolean;
 }
 
 export default function BookRecommendationForm({ onSubmit, isLoading }: BookRecommendationFormProps) {
+  // Mode and mood state
+  const [recommendationMode, setRecommendationMode] = useState<'personalized' | 'mood'>('personalized');
+  const [selectedMood, setSelectedMood] = useState<string>('');
+  const [customMood, setCustomMood] = useState<string>('');
+  const [isCustomMoodSelected, setIsCustomMoodSelected] = useState<boolean>(false);
+
   const [formData, setFormData] = useState({
     favoriteBooks: [] as string[],
     leastFavoriteBooks: [] as string[],
@@ -41,14 +50,46 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
   const [activeField, setActiveField] = useState<'favoriteBooks' | 'leastFavoriteBooks' | 'favoriteAuthors' | null>(null);
   const autocompleteRef = useRef<HTMLDivElement>(null);
 
+  // Mood options with icons and descriptions
+  const moodOptions = [
+    { value: 'Happy', icon: Smile, color: 'text-yellow-600', bgColor: 'bg-yellow-50', borderColor: 'border-yellow-300', description: 'Uplifting and joyful reads' },
+    { value: 'Sad', icon: Frown, color: 'text-blue-600', bgColor: 'bg-blue-50', borderColor: 'border-blue-300', description: 'Cathartic and healing stories' },
+    { value: 'Romantic', icon: HeartIcon, color: 'text-pink-600', bgColor: 'bg-pink-50', borderColor: 'border-pink-300', description: 'Love stories and romance' },
+    { value: 'Adventurous', icon: Compass, color: 'text-green-600', bgColor: 'bg-green-50', borderColor: 'border-green-300', description: 'Thrilling adventures and journeys' },
+    { value: 'Contemplative', icon: Coffee, color: 'text-purple-600', bgColor: 'bg-purple-50', borderColor: 'border-purple-300', description: 'Thoughtful and philosophical reads' },
+    { value: 'Mysterious', icon: Search, color: 'text-gray-600', bgColor: 'bg-gray-50', borderColor: 'border-gray-300', description: 'Mystery and suspense' },
+    { value: 'Nostalgic', icon: Clock, color: 'text-amber-600', bgColor: 'bg-amber-50', borderColor: 'border-amber-300', description: 'Coming-of-age and memories' },
+    { value: 'Energetic', icon: Sun, color: 'text-orange-600', bgColor: 'bg-orange-50', borderColor: 'border-orange-300', description: 'Fast-paced and exciting' }
+  ];
+
+  const handlePresetMoodSelect = (mood: string) => {
+    setSelectedMood(mood);
+    setIsCustomMoodSelected(false);
+    setCustomMood(''); // Clear custom mood when preset is selected
+  };
+
+  const handleCustomMoodSelect = () => {
+    setIsCustomMoodSelected(true);
+    setSelectedMood(''); // Clear preset mood when custom is selected
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
-      favoriteBooks: formData.favoriteBooks.join(', '),
-      leastFavoriteBooks: formData.leastFavoriteBooks.join(', '),
-      preferredGenres: formData.preferredGenres.join(', '),
-      favoriteAuthors: formData.favoriteAuthors.join(', '),
-    });
+    
+    if (recommendationMode === 'mood') {
+      const finalMood = isCustomMoodSelected ? customMood : selectedMood;
+      onSubmit({
+        mood: finalMood,
+        requestType: 'mood'
+      });
+    } else {
+      onSubmit({
+        favoriteBooks: formData.favoriteBooks.join(', '),
+        leastFavoriteBooks: formData.leastFavoriteBooks.join(', '),
+        preferredGenres: formData.preferredGenres.join(', '),
+        favoriteAuthors: formData.favoriteAuthors.join(', '),
+      });
+    }
   };
 
   const handleInputChange = (field: keyof typeof inputs, value: string) => {
@@ -217,7 +258,114 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
         <p className="text-dark-wood">Help us curate your personalized bookshelf.</p>
       </div>
 
+      {/* Mode Toggle */}
+      <div className="mb-8">
+        <div className="flex justify-center mb-4">
+          <div className="bg-parchment border border-leather-brown rounded-lg p-1 flex">
+            <button
+              type="button"
+              onClick={() => setRecommendationMode('personalized')}
+              className={`px-4 py-2 rounded-md font-serif transition-all duration-200 ${
+                recommendationMode === 'personalized'
+                  ? 'bg-leather-brown text-parchment shadow-md'
+                  : 'text-dark-wood hover:bg-aged-paper'
+              }`}
+            >
+              Personalized
+            </button>
+            <button
+              type="button"
+              onClick={() => setRecommendationMode('mood')}
+              className={`px-4 py-2 rounded-md font-serif transition-all duration-200 ${
+                recommendationMode === 'mood'
+                  ? 'bg-leather-brown text-parchment shadow-md'
+                  : 'text-dark-wood hover:bg-aged-paper'
+              }`}
+            >
+              Mood-Based
+            </button>
+          </div>
+        </div>
+        
+        {recommendationMode === 'mood' && (
+          <div className="text-center">
+            <h3 className="text-xl font-serif text-dark-wood mb-2">How are you feeling today?</h3>
+            <p className="text-dark-wood opacity-80 mb-6">Select your current mood for personalized book recommendations</p>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+              {moodOptions.map((mood) => {
+                const IconComponent = mood.icon;
+                const isSelected = selectedMood === mood.value && !isCustomMoodSelected;
+                return (
+                  <button
+                    key={mood.value}
+                    type="button"
+                    onClick={() => handlePresetMoodSelect(mood.value)}
+                    className={`p-4 rounded-lg border-2 transition-all duration-200 ${
+                      isSelected
+                        ? `${mood.borderColor} ${mood.bgColor} ring-2 ring-gold-leaf scale-105`
+                        : 'border-leather-brown bg-parchment hover:bg-aged-paper hover:scale-102'
+                    }`}
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <IconComponent className={`w-8 h-8 ${isSelected ? mood.color : 'text-dark-wood'}`} />
+                      <span className={`font-serif font-semibold ${isSelected ? mood.color : 'text-dark-wood'}`}>
+                        {mood.value}
+                      </span>
+                      <span className="text-xs text-dark-wood opacity-70 text-center">
+                        {mood.description}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            
+            {/* Custom Mood Input */}
+            <div className="mt-8 max-w-md mx-auto">
+              <div className="text-center mb-4">
+                <p className="text-dark-wood font-serif">or describe your feeling in your own words:</p>
+              </div>
+              
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={handleCustomMoodSelect}
+                  className={`w-full p-3 rounded-lg border-2 transition-all duration-200 ${
+                    isCustomMoodSelected
+                      ? 'border-gold-leaf bg-aged-paper ring-2 ring-gold-leaf'
+                      : 'border-leather-brown bg-parchment hover:bg-aged-paper'
+                  }`}
+                >
+                  <span className={`font-serif ${isCustomMoodSelected ? 'text-dark-wood font-semibold' : 'text-dark-wood'}`}>
+                    ✍️ Custom Mood
+                  </span>
+                </button>
+                
+                {isCustomMoodSelected && (
+                  <div className="mt-3">
+                    <input
+                      type="text"
+                      value={customMood}
+                      onChange={(e) => setCustomMood(e.target.value)}
+                      placeholder="e.g., feeling overwhelmed, excited about new beginnings, missing someone..."
+                      className="w-full px-4 py-3 bg-parchment border border-leather-brown rounded-md focus:ring-2 focus:ring-gold-leaf focus:border-transparent transition-all duration-200 text-dark-wood placeholder-gray-500 font-serif"
+                      autoFocus
+                    />
+                    <p className="text-sm text-dark-wood opacity-70 mt-2 text-center">
+                      Describe your current feeling or emotional state
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-6">
+        {recommendationMode === 'personalized' && (
+          <>
         {/* Favorite Books */}
         <div className="space-y-2">
           <label className="flex items-center gap-2 text-lg font-serif text-dark-wood">
@@ -305,7 +453,7 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
                 onFocus={() => setActiveField('leastFavoriteBooks')}
                 onChange={(e) => handleInputChange('leastFavoriteBooks', e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, 'leastFavoriteBooks')}
-                placeholder="Books you didn't enjoy"
+                placeholder="Books you didn't enjoy..."
                 className="flex-grow bg-transparent focus:outline-none text-dark-wood placeholder-gray-500 min-w-[150px]"
                 autoComplete="off"
               />
@@ -379,7 +527,7 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
                   setIsGenreDropdownOpen(true);
                 }}
                 onFocus={() => setIsGenreDropdownOpen(true)}
-                placeholder={formData.preferredGenres.length === 0 ? "Search or select genres..." : ""}
+                placeholder={formData.preferredGenres.length === 0 ? "Your preferred genres..." : ""}
                 className="flex-1 bg-transparent focus:outline-none text-dark-wood placeholder-gray-500 min-w-[100px]"
                 autoComplete="off"
               />
@@ -457,7 +605,7 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
                 onFocus={() => setActiveField('favoriteAuthors')}
                 onChange={(e) => handleInputChange('favoriteAuthors', e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, 'favoriteAuthors')}
-                placeholder="Authors whose work you enjoy"
+                placeholder="Authors whose work you enjoy..."
                 className="flex-grow bg-transparent focus:outline-none text-dark-wood placeholder-gray-500 min-w-[150px]"
                 autoComplete="off"
               />
@@ -488,11 +636,17 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
           </div>
           <p className="text-sm text-dark-wood opacity-80">(optional)</p>
         </div>
+        </>
+        )}
 
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={isLoading || formData.favoriteBooks.length === 0 || formData.preferredGenres.length === 0}
+          disabled={
+            isLoading || 
+            (recommendationMode === 'personalized' && (formData.favoriteBooks.length === 0 || formData.preferredGenres.length === 0)) ||
+            (recommendationMode === 'mood' && !selectedMood && (!isCustomMoodSelected || !customMood.trim()))
+          }
           className="w-full bg-leather-brown text-parchment font-serif font-semibold py-4 px-6 rounded-md hover:bg-dark-wood disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105 shadow-lg border-b-4 border-dark-wood active:border-b-0"
         >
           {isLoading ? (
@@ -501,7 +655,7 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
               Finding Your Next Chapter...
             </div>
           ) : (
-            'Get Personalized Recommendations'
+            recommendationMode === 'mood' ? 'Get Mood-Based Recommendations' : 'Get Personalized Recommendations'
           )}
         </button>
       </form>
