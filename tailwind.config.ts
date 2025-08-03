@@ -17,6 +17,8 @@ const config: Config = {
       },
       fontFamily: {
         serif: ['"Playfair Display"', 'serif'],
+        signature: ['var(--font-dancing-script)', 'cursive'],
+        handwriting: ['var(--font-caveat)', 'cursive'],
       },
       backgroundImage: {
         'bookshelf': "url('/bookshelf-bg.jpg')",

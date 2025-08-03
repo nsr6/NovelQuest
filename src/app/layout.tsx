@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Inter, Playfair_Display, Dancing_Script, Caveat } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({ 
@@ -10,6 +10,16 @@ const inter = Inter({
 const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-playfair",
+});
+
+const dancing = Dancing_Script({
+  subsets: ["latin"],
+  variable: "--font-dancing-script",
+});
+
+const caveat = Caveat({
+  subsets: ["latin"],
+  variable: "--font-caveat",
 });
 
 export const metadata: Metadata = {
@@ -32,7 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <body className={`${inter.variable} ${playfair.variable} font-sans bg-bookshelf bg-cover bg-fixed`}>
+      <body className={`${inter.variable} ${playfair.variable} ${dancing.variable} ${caveat.variable} font-sans bg-bookshelf bg-cover bg-fixed`}>
         {children}
       </body>
     </html>

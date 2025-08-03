@@ -5,6 +5,7 @@ import BookRecommendationForm from '@/components/BookRecommendationForm';
 import BookRecommendations from '@/components/BookRecommendations';
 import { BookRecommendation } from '@/types/book';
 import Header from '@/components/Header';
+import { BookOpen } from 'lucide-react';
 
 export default function Home() {
   const [recommendations, setRecommendations] = useState<BookRecommendation[]>([]);
@@ -102,14 +103,17 @@ export default function Home() {
             </div>
           </div>
         </main>
-        <footer className="bg-dark-wood mt-16 border-t-4 border-gold-leaf">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-parchment">
-            <p className="font-serif text-lg mb-2">&copy; 2025 NovelQuest</p>
-            <p className="text-sm text-parchment opacity-80">
-              Crafted with ❤️ by{" "}
-                Catabyss
-              . Powered by AI for better reading experiences.
-            </p>
+        <footer className="bg-dark-wood mt-8 border-t-4 border-gold-leaf">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-parchment">
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-6 h-6 text-gold-leaf" />
+                <span className="font-serif text-lg text-parchment">NovelQuest</span>
+              </div>
+              <p className="text-sm text-parchment opacity-80">
+                Crafted with ❤️ by <span className="font-signature text-lg font-semibold text-gold-leaf">Namitha Santhosh</span>
+              </p>
+            </div>
           </div>
         </footer>
       </div>

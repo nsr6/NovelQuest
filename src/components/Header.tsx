@@ -9,10 +9,10 @@ export default function Header() {
   return (
     <header className="bg-dark-wood shadow-lg border-b-4 border-gold-leaf">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-3">
-            <BookOpen className="w-9 h-9 text-gold-leaf" />
-            <span className="text-4xl font-serif text-parchment tracking-wider">
+            <BookOpen className="w-7 h-7 text-gold-leaf" />
+            <span className="text-3xl font-serif text-parchment tracking-wider">
               NovelQuest
             </span>
           </div>
@@ -42,7 +42,7 @@ export default function Header() {
                 <X className="w-7 h-7" />
               </button>
             </div>
-            <p className="text-dark-wood leading-relaxed">
+            <p className="text-dark-wood font-handwriting text-lg leading-relaxed">
               As a lifelong book lover, I often found myself overwhelmed by endless book lists and unsure of what to read next. Despite loving literature, it was hard to discover books that truly resonated with me. 
               <br/> That’s why I created NovelQuest — a place for readers like me, who crave thoughtful, personalized recommendations. 
               <br/>Powered by advanced AI, NovelQuest analyzes your reading preferences to help you uncover books and authors you'll genuinely connect with. It's my way of blending my love for storytelling with technology.
