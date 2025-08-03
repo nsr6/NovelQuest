@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { BookOpen, Heart, X, Star, User, ChevronDown, Check, HelpCircle, Smile, Frown, Heart as HeartIcon, Compass, Coffee, Search, Clock, Sun } from 'lucide-react';
+import { BookOpen, Heart, X, Star, User, ChevronDown, Check, HelpCircle, Smile, Frown, Heart as HeartIcon, Compass, Coffee, Search, Clock, Sun, RotateCcw } from 'lucide-react';
 
 interface BookSuggestion {
   key: string;
@@ -23,10 +23,11 @@ interface BookRecommendationFormProps {
     mood: string;
     requestType: 'mood';
   }) => void;
+  onReset?: () => void;
   isLoading: boolean;
 }
 
-export default function BookRecommendationForm({ onSubmit, isLoading }: BookRecommendationFormProps) {
+export default function BookRecommendationForm({ onSubmit, onReset, isLoading }: BookRecommendationFormProps) {
   // Mode and mood state
   const [recommendationMode, setRecommendationMode] = useState<'personalized' | 'mood'>('personalized');
   const [selectedMood, setSelectedMood] = useState<string>('');
@@ -71,6 +72,38 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
   const handleCustomMoodSelect = () => {
     setIsCustomMoodSelected(true);
     setSelectedMood(''); // Clear preset mood when custom is selected
+  };
+
+  const handleReset = () => {
+    // Reset personalized form data
+    setFormData({
+      favoriteBooks: [],
+      leastFavoriteBooks: [],
+      preferredGenres: [],
+      favoriteAuthors: []
+    });
+    
+    setInputs({
+      favoriteBooks: '',
+      leastFavoriteBooks: '',
+      favoriteAuthors: ''
+    });
+
+    // Reset mood data
+    setSelectedMood('');
+    setCustomMood('');
+    setIsCustomMoodSelected(false);
+
+    // Reset other form states
+    setSuggestions([]);
+    setActiveField(null);
+    setIsGenreDropdownOpen(false);
+    setGenreSearch('');
+
+    // Call parent reset function if provided
+    if (onReset) {
+      onReset();
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -249,18 +282,30 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
     !genres.some(g => g.toLowerCase() === genreSearch.trim().toLowerCase());
 
   return (
-    <div className="bg-aged-paper rounded-lg p-8 mb-8 border border-leather-brown shadow-inner">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-leather-brown rounded-full mb-4 ring-2 ring-gold-leaf">
-          <BookOpen className="w-8 h-8 text-parchment" />
+    <div className="bg-aged-paper rounded-lg p-4 md:p-6 mb-6 border border-leather-brown shadow-inner relative">
+      {/* Reset Button - Top Right */}
+      <button
+        type="button"
+        onClick={handleReset}
+        disabled={isLoading}
+        className="absolute top-3 right-3 text-dark-wood hover:text-leather-brown disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center gap-1.5 text-sm font-serif bg-parchment hover:bg-aged-paper px-3 py-1.5 rounded-md border border-leather-brown hover:border-gold-leaf group"
+        title="Clear all fields and start fresh"
+      >
+        <RotateCcw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-300" />
+        <span className="hidden sm:inline">Reset</span>
+      </button>
+
+      <div className="text-center mb-6">
+        <div className="inline-flex items-center justify-center w-12 h-12 bg-leather-brown rounded-full mb-3 ring-2 ring-gold-leaf">
+          <BookOpen className="w-6 h-6 text-parchment" />
         </div>
-        <h2 className="text-3xl font-serif text-dark-wood mb-2">Share your Literary Secrets</h2>
-        <p className="text-dark-wood">Help us curate your personalized bookshelf.</p>
+        <h2 className="text-2xl md:text-3xl font-serif text-dark-wood mb-1">Share your Literary Secrets</h2>
+        <p className="text-dark-wood text-sm">Help us curate your personalized bookshelf.</p>
       </div>
 
       {/* Mode Toggle */}
-      <div className="mb-8">
-        <div className="flex justify-center mb-4">
+      <div className="mb-6">
+        <div className="flex justify-center mb-3">
           <div className="bg-parchment border border-leather-brown rounded-lg p-1 flex">
             <button
               type="button"
@@ -289,10 +334,10 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
         
         {recommendationMode === 'mood' && (
           <div className="text-center">
-            <h3 className="text-xl font-serif text-dark-wood mb-2">How are you feeling today?</h3>
-            <p className="text-dark-wood opacity-80 mb-6">Select your current mood for personalized book recommendations</p>
+            <h3 className="text-lg font-serif text-dark-wood mb-1">How are you feeling today?</h3>
+            <p className="text-dark-wood opacity-80 mb-4 text-sm">Select your current mood for personalized book recommendations</p>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl mx-auto">
               {moodOptions.map((mood) => {
                 const IconComponent = mood.icon;
                 const isSelected = selectedMood === mood.value && !isCustomMoodSelected;
@@ -301,15 +346,15 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
                     key={mood.value}
                     type="button"
                     onClick={() => handlePresetMoodSelect(mood.value)}
-                    className={`p-4 rounded-lg border-2 transition-all duration-200 ${
+                    className={`p-3 rounded-lg border-2 transition-all duration-200 ${
                       isSelected
                         ? `${mood.borderColor} ${mood.bgColor} ring-2 ring-gold-leaf scale-105`
                         : 'border-leather-brown bg-parchment hover:bg-aged-paper hover:scale-102'
                     }`}
                   >
-                    <div className="flex flex-col items-center gap-2">
-                      <IconComponent className={`w-8 h-8 ${isSelected ? mood.color : 'text-dark-wood'}`} />
-                      <span className={`font-serif font-semibold ${isSelected ? mood.color : 'text-dark-wood'}`}>
+                    <div className="flex flex-col items-center gap-1">
+                      <IconComponent className={`w-6 h-6 ${isSelected ? mood.color : 'text-dark-wood'}`} />
+                      <span className={`font-serif font-semibold text-sm ${isSelected ? mood.color : 'text-dark-wood'}`}>
                         {mood.value}
                       </span>
                       <span className="text-xs text-dark-wood opacity-70 text-center">
@@ -322,16 +367,16 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
             </div>
             
             {/* Custom Mood Input */}
-            <div className="mt-8 max-w-md mx-auto">
-              <div className="text-center mb-4">
-                <p className="text-dark-wood font-serif">or describe your feeling in your own words:</p>
+            <div className="mt-6 max-w-md mx-auto">
+              <div className="text-center mb-3">
+                <p className="text-dark-wood font-serif text-sm">or describe your feeling in your own words:</p>
               </div>
               
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <button
                   type="button"
                   onClick={handleCustomMoodSelect}
-                  className={`w-full p-3 rounded-lg border-2 transition-all duration-200 ${
+                  className={`w-full p-2 rounded-lg border-2 transition-all duration-200 ${
                     isCustomMoodSelected
                       ? 'border-gold-leaf bg-aged-paper ring-2 ring-gold-leaf'
                       : 'border-leather-brown bg-parchment hover:bg-aged-paper'
@@ -348,8 +393,8 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
                       type="text"
                       value={customMood}
                       onChange={(e) => setCustomMood(e.target.value)}
-                      placeholder="e.g., feeling overwhelmed, excited about new beginnings, missing someone..."
-                      className="w-full px-4 py-3 bg-parchment border border-leather-brown rounded-md focus:ring-2 focus:ring-gold-leaf focus:border-transparent transition-all duration-200 text-dark-wood placeholder-gray-500 font-serif"
+                      placeholder="e.g., feeling overwhelmed, missing someone..."
+                      className="w-full px-3 py-2 bg-parchment border border-leather-brown rounded-md focus:ring-2 focus:ring-gold-leaf focus:border-transparent transition-all duration-200 text-dark-wood placeholder-gray-500 font-serif"
                       autoFocus
                     />
                     <p className="text-sm text-dark-wood opacity-70 mt-2 text-center">
@@ -363,12 +408,12 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {recommendationMode === 'personalized' && (
           <>
         {/* Favorite Books */}
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-lg font-serif text-dark-wood">
+        <div className="space-y-1">
+          <label className="flex items-center gap-2 text-base font-serif text-dark-wood">
             <Heart className="w-5 h-5 text-red-700" />
             Favorite Books
             <div className="relative group flex items-center ml-1">
@@ -426,8 +471,8 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
         </div>
 
         {/* Least Favorite Books */}
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-lg font-serif text-dark-wood">
+        <div className="space-y-1">
+          <label className="flex items-center gap-2 text-base font-serif text-dark-wood">
             <X className="w-5 h-5 text-gray-600" />
             Not-so-Favorite Books
             <div className="relative group flex items-center ml-1">
@@ -486,8 +531,8 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
         </div>
 
         {/* Preferred Genres */}
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-lg font-serif text-dark-wood">
+        <div className="space-y-1">
+          <label className="flex items-center gap-2 text-base font-serif text-dark-wood">
             <Star className="w-5 h-5 text-gold-leaf" />
             Preferred Genres
           </label>
@@ -578,8 +623,8 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
         </div>
 
         {/* Favorite Authors */}
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-lg font-serif text-dark-wood">
+        <div className="space-y-1">
+          <label className="flex items-center gap-2 text-base font-serif text-dark-wood">
             <User className="w-5 h-5 text-blue-700" />
             Favorite Authors
             <div className="relative group flex items-center ml-1">
@@ -640,15 +685,16 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
         )}
 
         {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={
-            isLoading || 
-            (recommendationMode === 'personalized' && (formData.favoriteBooks.length === 0 || formData.preferredGenres.length === 0)) ||
-            (recommendationMode === 'mood' && !selectedMood && (!isCustomMoodSelected || !customMood.trim()))
-          }
-          className="w-full bg-leather-brown text-parchment font-serif font-semibold py-4 px-6 rounded-md hover:bg-dark-wood disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105 shadow-lg border-b-4 border-dark-wood active:border-b-0"
-        >
+        <div className="max-w-md mx-auto">
+          <button
+            type="submit"
+            disabled={
+              isLoading || 
+              (recommendationMode === 'personalized' && (formData.favoriteBooks.length === 0 || formData.preferredGenres.length === 0)) ||
+              (recommendationMode === 'mood' && !selectedMood && (!isCustomMoodSelected || !customMood.trim()))
+            }
+            className="w-full bg-leather-brown text-parchment font-serif font-semibold py-4 px-6 rounded-md hover:bg-dark-wood disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105 shadow-lg border-b-4 border-dark-wood active:border-b-0"
+          >
           {isLoading ? (
             <div className="flex items-center justify-center gap-2">
               <div className="w-5 h-5 border-2 border-parchment border-t-transparent rounded-full animate-spin"></div>
@@ -658,6 +704,7 @@ export default function BookRecommendationForm({ onSubmit, isLoading }: BookReco
             recommendationMode === 'mood' ? 'Get Mood-Based Recommendations' : 'Get Personalized Recommendations'
           )}
         </button>
+        </div>
       </form>
     </div>
   );

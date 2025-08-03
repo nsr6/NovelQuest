@@ -66,16 +66,25 @@ export default function Home() {
     }
   };
 
+  const handleReset = () => {
+    setRecommendations([]);
+    setHasSearched(false);
+    setLastPreferences(null);
+    setPreviouslyRecommended([]);
+    setError(null);
+  };
+
   const isLoading = isSubmitting || isRefreshing;
 
   return (
     <div className="relative min-h-screen bg-bookshelf bg-cover bg-center bg-fixed">
       <div className="bg-overlay flex-grow flex flex-col">
         <Header />
-        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow">
-          <div className="bg-parchment bg-opacity-90 p-4 sm:p-8 rounded-lg shadow-lg">
+        <main className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-20 py-6 sm:py-8 lg:py-12 flex-grow">
+        <div className="bg-parchment bg-opacity-90 p-3 sm:p-6 rounded-lg shadow-lg">
             <BookRecommendationForm
               onSubmit={handleNewSearch}
+              onReset={handleReset}
               isLoading={isSubmitting}
             />
             {error && (
