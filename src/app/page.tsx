@@ -78,8 +78,8 @@ export default function Home() {
   const isLoading = isSubmitting || isRefreshing;
 
   return (
-    <div className="relative min-h-screen bg-bookshelf bg-cover bg-center bg-fixed">
-      <div className="bg-overlay flex-grow flex flex-col">
+    <div className="relative min-h-screen flex flex-col bg-bookshelf bg-cover bg-center bg-fixed">
+      <div className="bg-overlay flex-1 flex flex-col">
         <Header />
         <main className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-20 py-6 sm:py-8 lg:py-12 flex-grow">
         <div className="bg-parchment bg-opacity-90 p-3 sm:p-6 rounded-lg shadow-lg">
@@ -103,7 +103,7 @@ export default function Home() {
             </div>
           </div>
         </main>
-        <footer className="bg-dark-wood mt-8 border-t-4 border-gold-leaf">
+  <footer className="bg-dark-wood mt-auto border-t-4 border-gold-leaf">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-parchment">
               <div className="flex items-center gap-2">
