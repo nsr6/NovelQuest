@@ -1,6 +1,6 @@
 # NovelQuest - AI-Powered Book Recommendations
 
-Welcome to NovelQuest, an intelligent book recommendation engine that connects you with your next great read. By analyzing your literary tastes—your favorite books, authors, and genres—our AI-powered platform delivers personalized suggestions tailored to you.
+Welcome to NovelQuest — an intelligent book recommendation app that helps you find your next great read. NovelQuest now supports both preference-based and mood-based recommendations powered by the Groq API.
 
 ## Table of Contents
 
@@ -8,8 +8,9 @@ Welcome to NovelQuest, an intelligent book recommendation engine that connects y
 - [How It Works](#how-it-works)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [API Endpoints](#api-endpoints)
+- [Live Demo](#live-demo)
+- [Screenshots](#screenshots)
+- [How Recommendations Work](#how-recommendations-work)
 - [Components](#components)
 - [Contributing](#contributing)
 - [License](#license)
@@ -18,13 +19,17 @@ Welcome to NovelQuest, an intelligent book recommendation engine that connects y
 
 - **Personalized Recommendations**: Get book suggestions based on your unique reading profile.
 - **Favorite Books & Authors**: Tell us what you love, and we'll find similar titles and authors.
-- **Genre Preferences**: Specify your favorite genres to narrow down the recommendations.
+- **Genre Preferences**: Specify your favorite genres to narrow down recommendations.
 - **Least Favorite Books**: Exclude books you didn't enjoy for more accurate results.
+- **Mood-based Recommendations**: Tell us how you're feeling and get 6 mood-appropriate books selected to match or uplift your mood.
 - **Sleek, Modern UI**: A clean and intuitive interface for a seamless user experience.
 
 ## How It Works
 
-NovelQuest uses a sophisticated AI model to understand your reading preferences. When you submit the form with your favorite books, authors, and genres, the application processes this information to generate a curated list of book recommendations that you're likely to enjoy.
+NovelQuest uses the Groq API (via the Groq SDK) to generate recommendations. You can request either:
+
+- Personalized recommendations based on favorite books, authors, and preferred genres.
+- Mood-based recommendations: specify a current mood (for example: "happy", "sad", "adventurous") and receive exactly 6 books selected to suit that mood.
 
 ## Tech Stack
 
@@ -35,98 +40,71 @@ NovelQuest uses a sophisticated AI model to understand your reading preferences.
 
 ```
 NovelQuest/
-├── frontend-next/
-│   ├── src/
-│   │   ├── app/
-│   │   │   └── api/
-│   │   │       └── route.ts
-│   │   ├── components/
-│   │   └── types/
-│   ├── public/
-│   ├── .env.local
-│   ├── package.json
-│   └── next.config.ts
-└── README.md
+├── package.json
+├── next.config.ts
+├── public/
+└── src/
+    ├── app/
+    │   ├── api/
+    │   │   └── route.ts
+    │   ├── globals.css
+    │   ├── layout.tsx
+    │   └── page.tsx
+    ├── components/
+    │   ├── BookRecommendationForm.tsx
+    │   ├── BookRecommendations.tsx
+    │   └── Header.tsx
+    └── types/
+        └── book.ts
 ```
 
-## Getting Started
+## Live Demo
 
-### Prerequisites
+Try the live site at: https://novel-quest.vercel.app/
 
-- Node.js (v14 or later)
-- npm
+This repository is the source for the live demo — you don't need to run anything locally to try NovelQuest.
 
-### Installation
+## Screenshots
 
-1.  **Clone the repository**:
-    ```bash
-    git clone https://github.com/your-username/novelquest.git
-    ```
+![Landing](public/screenshots/hero.png)
 
-2.  **Navigate to the project directory**:
-    ```bash
-    cd NovelQuest
-    ```
+*Landing / hero section*
 
-3.  **Install dependencies**:
-    ```bash
-    npm install
-    ```
+![Results](public/screenshots/results.png)
 
-4.  **Set up environment variables**:
+*Example recommendations results*
 
-    Create a `.env.local` file in the `frontend-next` directory and add your Groq API key:
-    ```
-    GROQ_API_KEY=your_groq_api_key
-    ```
+![Form](public/screenshots/form.png)
 
-5.  **Start the application**:
-    From the root `NovelQuest` directory, run the start script:
-    ```bash
-    npm start
-    ```
+*Recommendation form*
 
-    This will launch the frontend development server at `http://localhost:3000`
+## How Recommendations Work
 
-## API Endpoints
+The application provides server-side recommendation logic (implemented in a Next.js API route) that accepts either preference-based or mood-based requests. Inputs the server reads include:
 
-### `POST /api`
+- favoriteBooks (string, optional)
+- leastFavoriteBooks (string, optional)
+- preferredGenres (string, optional)
+- favoriteAuthors (string, optional)
+- excludedTitles (array of strings, optional)
+- mood (string, optional) — when present, the server will use the mood-based recommendation flow and return exactly 6 books
+- requestType (string) — indicates which mode to use (e.g., "preferences" or "mood")
 
--   **Description**: Generates book recommendations based on user preferences.
--   **Request Body**:
-    ```json
-    {
-      "favoriteBooks": "string",
-      "leastFavoriteBooks": "string",
-      "preferredGenres": "string",
-      "favoriteAuthors": "string"
-    }
-    ```
--   **Response**:
-    Returns a JSON array of recommended books.
-    ```json
-    [
-      {
-        "title": "Book Title",
-        "author": "Author Name",
-        "description": "A brief description of the book."
-      }
-    ]
-    ```
+The server constructs a model prompt and calls the Groq SDK. Responses are expected as a strict JSON array of book objects containing at least title, author, genre, and description. The server validates and parses the model output before forwarding it to the client.
 
 ## Components
 
-The `frontend-next/src/components` directory contains the main React components for the application.
+The `src/components` directory contains the main React components for the application.
 
 ### BookRecommendationForm
 
--   **File**: `BookRecommendationForm.tsx`
--   **Description**: A form for users to input their reading preferences, including favorite books, least favorite books, preferred genres, and favorite authors. It handles form state and submission.
+- **File**: `src/components/BookRecommendationForm.tsx`
+- **Description**: A form for users to input reading preferences. In addition to favorites and preferred genres, the form now supports a "mood" input so users can request mood-based recommendations. The form sends the selected request type to the server (`preferences` or `mood`).
 
 ### BookRecommendations
 
--   **File**: `BookRecommendations.tsx`
--   **Description**: Displays the list of recommended books in a clean, card-based layout. It shows the book title, author, and a brief description.
+- **File**: `src/components/BookRecommendations.tsx`
+- **Description**: Displays recommended books in a clean, card-based layout. Each recommendation shows title, author, genre, and a short description explaining why it was recommended.
 
 ## Contributing
 
