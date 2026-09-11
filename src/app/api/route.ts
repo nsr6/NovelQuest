@@ -99,7 +99,7 @@ Respond only in the following strict JSON format (no extra text or explanation):
                 { role: 'system', content: 'You are a book recommendation assistant.' },
                 { role: 'user', content: prompt }
             ],
-            model: 'llama-3.1-8b-instant',
+            model: 'openai/gpt-oss-120b',
             temperature: 0.7,
             max_tokens: 1024,
             top_p: 1,
